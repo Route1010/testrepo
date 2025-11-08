@@ -681,8 +681,21 @@ def render_results_section(df_results, processing_time):
         )
     
     with col2:
-        # Excel export would require additional libraries
-        st.button("📊 Export Excel", disabled=True, help="Excel export coming soon", use_container_width=True)
+        if not filtered_df.empty:
+            import io
+            excel_buffer = io.BytesIO()
+            with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+                filtered_df.to_excel(writer, index=False, sheet_name='WHOIS Results')
+            excel_data = excel_buffer.getvalue()
+            st.download_button(
+                label="📊 Download Excel",
+                data=excel_data,
+                file_name=f"whois_results_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True
+            )
+        else:
+            st.button("📊 Download Excel", disabled=True, use_container_width=True)
     
     with col3:
         # JSON export
